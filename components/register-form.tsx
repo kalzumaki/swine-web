@@ -15,6 +15,7 @@ import {
 import { RegisterFormData, RegisterFormResponse } from "@/types/register";
 import { httpClient } from "@/lib/http-client";
 import { API_ENDPOINTS } from "@/lib/api/api-endpoints";
+import Link from "next/link";
 
 export function RegisterForm() {
   const [formData, setFormData] = useState<RegisterFormData>({
@@ -33,7 +34,6 @@ export function RegisterForm() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Clear error when user starts typing
     if (errors[name as keyof RegisterFormData]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -78,6 +78,7 @@ export function RegisterForm() {
     setIsLoading(true);
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, ...registerData } = formData;
 
       const response = await httpClient.post<
@@ -95,15 +96,27 @@ export function RegisterForm() {
         password: "",
         confirmPassword: "",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle API errors
-      if (error.response?.data?.errors) {
-        setErrors(error.response.data.errors);
-        toast.error("Please fix the errors below");
+      if (error && typeof error === "object" && "response" in error) {
+        const apiError = error as {
+          response?: {
+            data?: { errors?: Partial<RegisterFormData>; message?: string };
+          };
+        };
+        if (apiError.response?.data?.errors) {
+          setErrors(apiError.response.data.errors);
+          toast.error("Please fix the errors below");
+        } else {
+          const errorMessage =
+            apiError.response?.data?.message ||
+            "Registration failed. Please try again.";
+          toast.error(errorMessage);
+          setErrors({ email: errorMessage });
+        }
       } else {
-        const errorMessage = error.response?.data?.message || "Registration failed. Please try again.";
-        toast.error(errorMessage);
-        setErrors({ email: errorMessage });
+        toast.error("Registration failed. Please try again.");
+        setErrors({ email: "Registration failed. Please try again." });
       }
     } finally {
       setIsLoading(false);
@@ -222,12 +235,12 @@ export function RegisterForm() {
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Creating Account..." : "Create Account"}
           </Button>
-           <div className="text-center text-sm">
-              Already have an account?{" "}
-              <a href="/" className="underline underline-offset-4">
-                Log In
-              </a>
-            </div>
+          <div className="text-center text-sm">
+            Already have an account?{" "}
+            <Link href="/" className="underline underline-offset-4">
+              Log In
+            </Link>
+          </div>
         </form>
       </CardContent>
     </Card>

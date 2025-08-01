@@ -1,50 +1,47 @@
-"use client"
-import * as React from "react"
-import { LogOut, User } from "lucide-react"
-import { useRouter } from "next/navigation"
+"use client";
+import * as React from "react";
+import { LogOut, User } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-import { useAuth } from "@/lib/hooks/useAuth"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
+import { useAuth } from "@/lib/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import { toast } from "sonner"
+} from "@/components/ui/sidebar";
+import { toast } from "sonner";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, logout, loading } = useAuth()
-  const router = useRouter()
-  const [isLoggingOut, setIsLoggingOut] = React.useState(false)
+  const { user, logout, loading } = useAuth();
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
 
   const handleLogout = async () => {
     try {
-      setIsLoggingOut(true)
-      await logout()
-      
+      setIsLoggingOut(true);
+      await logout();
+
       toast.success("Logout successful!", {
         description: "You have been logged out successfully.",
-      })
-      
-      router.push('/')
+      });
+
+      router.push("/");
     } catch (error) {
-      console.error('Logout failed:', error)
+      console.error("Logout failed:", error);
       toast.error("Logout failed", {
         description: "An error occurred while logging out.",
-      })
+      });
     } finally {
-      setIsLoggingOut(false)
+      setIsLoggingOut(false);
     }
-  }
+  };
 
   return (
     <Sidebar {...props}>
@@ -74,9 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent>
-        {/* Your navigation content goes here */}
-      </SidebarContent>
+      <SidebarContent>{/* Your navigation content goes here */}</SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -90,14 +85,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </div>
                   </div>
                 )}
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="w-full justify-start gap-2 h-8"
                   onClick={handleLogout}
                   disabled={loading || !user || isLoggingOut}
                 >
                   <LogOut className="h-4 w-4" />
-                  <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+                  <span>{isLoggingOut ? "Logging out..." : "Logout"}</span>
                 </Button>
               </div>
             </SidebarMenuButton>
@@ -106,5 +101,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
