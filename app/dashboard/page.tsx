@@ -1,11 +1,15 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
+import { useAuth } from "@/lib/hooks/useAuth"
+import { Progress } from "@/components/ui/progress"
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
-  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -15,6 +19,44 @@ import {
 } from "@/components/ui/sidebar"
 
 export default function Page() {
+  const { user, loading } = useAuth()
+  const router = useRouter()
+  const [hasMounted, setHasMounted] = useState(false)
+
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (hasMounted && !loading && !user) {
+      router.push('/')
+    }
+  }, [user, loading, router, hasMounted])
+
+
+  if (!hasMounted) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className="text-lg">Initializing...</div>
+        <Progress value={33} className="w-64" />
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className="text-lg">Loading dashboard...</div>
+        <Progress value={66} className="w-64" />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -27,14 +69,8 @@ export default function Page() {
           />
           <Breadcrumb>
             <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">
-                  Building Your Application
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                <BreadcrumbPage>Dashboard</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

@@ -1,10 +1,15 @@
+"use client"
 import * as React from "react"
+import { LogOut, User } from "lucide-react"
+import { useRouter } from "next/navigation"
 
-import { SearchForm } from "@/components/search-form"
-import { VersionSwitcher } from "@/components/version-switcher"
+import { useAuth } from "@/lib/hooks/useAuth"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -14,168 +19,91 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-
-// This is sample data.
-const data = {
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
-  navMain: [
-    {
-      title: "Getting Started",
-      url: "#",
-      items: [
-        {
-          title: "Installation",
-          url: "#",
-        },
-        {
-          title: "Project Structure",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Building Your Application",
-      url: "#",
-      items: [
-        {
-          title: "Routing",
-          url: "#",
-        },
-        {
-          title: "Data Fetching",
-          url: "#",
-          isActive: true,
-        },
-        {
-          title: "Rendering",
-          url: "#",
-        },
-        {
-          title: "Caching",
-          url: "#",
-        },
-        {
-          title: "Styling",
-          url: "#",
-        },
-        {
-          title: "Optimizing",
-          url: "#",
-        },
-        {
-          title: "Configuring",
-          url: "#",
-        },
-        {
-          title: "Testing",
-          url: "#",
-        },
-        {
-          title: "Authentication",
-          url: "#",
-        },
-        {
-          title: "Deploying",
-          url: "#",
-        },
-        {
-          title: "Upgrading",
-          url: "#",
-        },
-        {
-          title: "Examples",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "API Reference",
-      url: "#",
-      items: [
-        {
-          title: "Components",
-          url: "#",
-        },
-        {
-          title: "File Conventions",
-          url: "#",
-        },
-        {
-          title: "Functions",
-          url: "#",
-        },
-        {
-          title: "next.config.js Options",
-          url: "#",
-        },
-        {
-          title: "CLI",
-          url: "#",
-        },
-        {
-          title: "Edge Runtime",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Architecture",
-      url: "#",
-      items: [
-        {
-          title: "Accessibility",
-          url: "#",
-        },
-        {
-          title: "Fast Refresh",
-          url: "#",
-        },
-        {
-          title: "Next.js Compiler",
-          url: "#",
-        },
-        {
-          title: "Supported Browsers",
-          url: "#",
-        },
-        {
-          title: "Turbopack",
-          url: "#",
-        },
-      ],
-    },
-  ],
-}
+import { toast } from "sonner"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user, logout, loading } = useAuth()
+  const router = useRouter()
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false)
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true)
+      await logout()
+      
+      toast.success("Logout successful!", {
+        description: "You have been logged out successfully.",
+      })
+      
+      router.push('/')
+    } catch (error) {
+      console.error('Logout failed:', error)
+      toast.error("Logout failed", {
+        description: "An error occurred while logging out.",
+      })
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <VersionSwitcher
-          versions={data.versions}
-          defaultVersion={data.versions[0]}
-        />
-        <SearchForm />
+        <div className="flex items-center gap-3 px-2 py-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
+            <User className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <div className="flex flex-col min-w-0">
+            {loading ? (
+              <div className="flex flex-col gap-2">
+                <div className="text-sm text-muted-foreground">Loading...</div>
+                <Progress value={50} className="w-full h-1" />
+              </div>
+            ) : user ? (
+              <>
+                <div className="text-sm font-medium truncate">
+                  {user.fname} {user.lname}
+                </div>
+                <div className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </div>
+              </>
+            ) : (
+              <div className="text-sm text-muted-foreground">Not logged in</div>
+            )}
+          </div>
+        </div>
       </SidebarHeader>
       <SidebarContent>
-        {/* We create a SidebarGroup for each parent. */}
-        {data.navMain.map((item) => (
-          <SidebarGroup key={item.title}>
-            <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
-                      <a href={item.url}>{item.title}</a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        {/* Your navigation content goes here */}
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <div className="w-full">
+                {isLoggingOut && (
+                  <div className="flex flex-col gap-2 mb-2">
+                    <Progress value={75} className="w-full" />
+                    <div className="text-xs text-center text-muted-foreground">
+                      Logging out...
+                    </div>
+                  </div>
+                )}
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-2 h-8"
+                  onClick={handleLogout}
+                  disabled={loading || !user || isLoggingOut}
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+                </Button>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )
