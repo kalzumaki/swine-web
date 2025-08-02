@@ -17,7 +17,6 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { userApi } from "@/lib/api/user";
-import Image from "next/image";
 
 interface ProfileSheetProps {
   children: React.ReactNode;
@@ -138,7 +137,8 @@ export function ProfileSheet({ children }: ProfileSheetProps) {
                 <div className="relative">
                   <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary overflow-hidden">
                     {profileImage ? (
-                      <Image
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
                         src={profileImage}
                         alt="Profile"
                         className="h-full w-full object-cover"

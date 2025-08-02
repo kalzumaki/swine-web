@@ -19,7 +19,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { toast } from "sonner";
-import Image from "next/image";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, logout, loading } = useAuth();
@@ -53,7 +52,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <div className="flex items-center gap-3 px-2 py-3 cursor-pointer hover:bg-accent rounded-md transition-colors">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary overflow-hidden">
               {user?.profile ? (
-                <Image
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
                   src={userApi.getProfileImageUrl(user.profile)}
                   alt="Profile"
                   className="h-full w-full object-cover"
