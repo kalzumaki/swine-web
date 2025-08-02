@@ -163,3 +163,5 @@ toQueryResponse.success = <T = unknown>(
 
 toQueryResponse.error = (message: string) =>
   toQueryResponse(false, null, message);
+
+// from Sebastian's code

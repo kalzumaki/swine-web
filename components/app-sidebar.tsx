@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { ProfileSheet } from "@/components/profile-sheet";
+import { userApi } from "@/lib/api/user";
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +19,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, logout, loading } = useAuth();
@@ -46,30 +49,44 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <div className="flex items-center gap-3 px-2 py-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-            <User className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <div className="flex flex-col min-w-0">
-            {loading ? (
-              <div className="flex flex-col gap-2">
-                <div className="text-sm text-muted-foreground">Loading...</div>
-                <Progress value={50} className="w-full h-1" />
-              </div>
-            ) : user ? (
-              <>
-                <div className="text-sm font-medium truncate">
-                  {user.fname} {user.lname}
+        <ProfileSheet>
+          <div className="flex items-center gap-3 px-2 py-3 cursor-pointer hover:bg-accent rounded-md transition-colors">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary overflow-hidden">
+              {user?.profile ? (
+                <Image
+                  src={userApi.getProfileImageUrl(user.profile)}
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <User className="h-4 w-4 text-primary-foreground" />
+              )}
+            </div>
+            <div className="flex flex-col min-w-0">
+              {loading ? (
+                <div className="flex flex-col gap-2">
+                  <div className="text-sm text-muted-foreground">
+                    Loading...
+                  </div>
+                  <Progress value={50} className="w-full h-1" />
                 </div>
-                <div className="text-xs text-muted-foreground truncate">
-                  {user.email}
+              ) : user ? (
+                <>
+                  <div className="text-sm font-medium truncate">
+                    {user.fname} {user.lname}
+                  </div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {user.email}
+                  </div>
+                </>
+              ) : (
+                <div className="text-sm text-muted-foreground">
+                  Not logged in
                 </div>
-              </>
-            ) : (
-              <div className="text-sm text-muted-foreground">Not logged in</div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        </ProfileSheet>
       </SidebarHeader>
       <SidebarContent>{/* Your navigation content goes here */}</SidebarContent>
       <SidebarFooter>
