@@ -18,7 +18,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { userApi } from "@/lib/api/user";
-
+import { UpdateProfileErrorResponse } from "@/types/user";
 interface ProfileSheetProps {
   children: React.ReactNode;
 }
@@ -81,58 +81,65 @@ export function ProfileSheet({ children }: ProfileSheetProps) {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("File too large", {
-        description: "Please select an image smaller than 5MB.",
-      });
-      return;
-    }
 
     const imageUrl = URL.createObjectURL(file);
     setProfileImage(imageUrl);
     setSelectedFile(file);
 
-    toast.success("Image selected!", {
-      description: "Click 'Save Changes' to upload your new profile picture.",
+  };
+
+const handleSaveProfile = async () => {
+  if (user) {
+    const hasTextChanges =
+      formData.fname !== (user.fname || "") ||
+      formData.lname !== (user.lname || "") ||
+      formData.username !== (user.username || "");
+
+    const hasImageChange = selectedFile !== null;
+
+    if (!hasTextChanges && !hasImageChange) {
+      toast.info("No changes detected", {
+        description: "Your profile information is already up to date.",
+      });
+      return;
+    }
+  }
+
+  try {
+    setIsSavingProfile(true);
+
+    const profilePayload = {
+      fname: formData.fname,
+      lname: formData.lname,
+      username: formData.username,
+    };
+
+    if (selectedFile) {
+      await userApi.updateProfile({
+        ...profilePayload,
+        profile: selectedFile,
+      });
+    } else {
+      await userApi.updateProfile(profilePayload);
+    }
+
+    await refreshUser();
+
+    setSelectedFile(null);
+
+    toast.success("Profile updated!", {
+      description: "Your profile has been updated successfully.",
     });
-  };
-
-  const handleSaveProfile = async () => {
-    if (user) {
-      const hasTextChanges =
-        formData.fname !== (user.fname || "") ||
-        formData.lname !== (user.lname || "") ||
-        formData.username !== (user.username || "");
-
-      const hasImageChange = selectedFile !== null;
-
-      if (!hasTextChanges && !hasImageChange) {
-        toast.info("No changes detected", {
-          description: "Your profile information is already up to date.",
-        });
-        return;
-      }
-    }
-
-    try {
-      setIsSavingProfile(true);
-
-      await refreshUser();
-
-      setSelectedFile(null);
-
-      toast.success("Profile updated!", {
-        description: "Your profile has been updated successfully.",
-      });
-    } catch (error) {
-      toast.error("Failed to update profile", {
-        description:
-          error instanceof Error ? error.message : "Please try again later.",
-      });
-    } finally {
-      setIsSavingProfile(false);
-    }
-  };
+  } catch (error) {
+    const err = error as UpdateProfileErrorResponse;
+    let apiMessage = err?.response?.data?.message;
+    toast.error("Failed to update profile", {
+      description: apiMessage || (error instanceof Error ? error.message : "An error occurred. Please try again later."),
+    });
+  } finally {
+    setIsSavingProfile(false);
+  }
+}
 
   const handleSavePassword = async () => {
     if (

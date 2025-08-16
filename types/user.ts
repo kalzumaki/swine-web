@@ -4,3 +4,13 @@ export interface UserUpdateFormData {
   username: string;
   profile?: File | null;
 }
+
+export type UpdateProfileErrorResponse = {
+  response?: {
+    data?: {
+      message?: string;
+      errors?: Record<string, string[]> | { field: string; message: string }[];
+      error?: string;
+    };
+  };
+};
